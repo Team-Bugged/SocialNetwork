@@ -4,6 +4,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const neo4j = require("neo4j-driver");
 const rules = require("nodemon/lib/rules");
+const { acceptsEncodings } = require("express/lib/request");
 
 const app = express();
 const PORT = process.env.PORT;
@@ -86,7 +87,7 @@ app.post("/login", (req, res)=>{
     let session = driver.session();
 
     session.run('MATCH (u:User {username: $usernameP}) RETURN u',{
-        usernameP: req.username,
+        usernameP: username,
     })
     .then((result)=>{
         if(result.records.length>0){
@@ -157,7 +158,45 @@ app.post("/sendsConnnection", authenticate, (req, res)=>{
         // res.send(err);
         res.status(500)
         session.close()
-        res.send({message:"Error"})
+        res.send({message:"Error"});
+    })
+
+})
+
+app.post("/acceptConnection", authenticate, (req, res)=>{
+    
+    let acceptConnectionFrom = req.body.acceptConnectionFrom;
+    let session = driver.session();
+
+    session.run('MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP CREATE (a)-[c:Connection]->(b) CREATE (a)<-[r:Connection]-(b) RETURN c, r',{
+        usernameP: req.username,
+        acceptConnectionFromP: acceptConnectionFrom,
+    })
+    .then((result)=>{
+        console.log(result);
+        res.status(200);
+        res.send({message:"Success"})
+        session.close()
+    })
+    .catch((err)=>{
+        console.log(err);
+        res.status(500)
+        session.close()
+        res.send({message:"Error"});
+    })
+
+    let session1 = driver.session();
+    session1.run('MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP DELETE s',{
+        usernameP: req.username,
+        acceptConnectionFromP: acceptConnectionFrom,
+    })
+    .then((result)=>{
+        console.log(result);
+        session1.close()
+    })
+    .catch((err)=>{
+        console.log(err);
+        session1.close();
     })
 
 })
