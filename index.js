@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const neo4j = require("neo4j-driver");
+const rules = require("nodemon/lib/rules");
 
 const app = express();
 const PORT = process.env.PORT;
@@ -116,7 +117,7 @@ app.post("/login", (req, res)=>{
    
 })  
 
-app.get("/getuserdetails",authenticate, (req, res)=> {
+app.get("/getUserDetails",authenticate, (req, res)=> {
     let session = driver.session();
 
     session.run('MATCH (u:User {username: $usernameP}) RETURN u', {
@@ -134,6 +135,31 @@ app.get("/getuserdetails",authenticate, (req, res)=> {
     .then(()=>{
         session.close();
     })
+})
+
+app.post("/sendsConnnection", authenticate, (req, res)=>{
+    
+    
+    let session = driver.session();
+    session.run("MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)",{
+        usernameP: req.username,
+        connectToP: req.body.connectTo,
+    })
+    .then((result)=>{
+        console.log(result);
+        // res.send(result);
+        res.status(200);
+        res.send({message:"Success"})
+        session.close()
+    })
+    .catch((err)=>{
+        console.log(err);
+        // res.send(err);
+        res.status(500)
+        session.close()
+        res.send({message:"Error"})
+    })
+
 })
 
 app.get("/close", (req, res)=>{
