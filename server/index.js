@@ -3,8 +3,6 @@ const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const neo4j = require("neo4j-driver");
-const rules = require("nodemon/lib/rules");
-const { acceptsEncodings } = require("express/lib/request");
 
 const app = express();
 const PORT = process.env.PORT;
@@ -204,7 +202,7 @@ app.post("/acceptConnection", authenticate, (req, res)=>{
 app.get("/close", (req, res)=>{
     driver.close();
 })
-
+a
 
 app.listen(PORT, ()=>{
     console.log("app listening at port " + PORT);
