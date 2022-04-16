@@ -15,7 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const authenticate  = (req, res, next)=> {
     const authHeader = req.headers['authorization'];
+    console.log(authHeader)
     const token = authHeader  && authHeader.split(' ')[1];
+    console.log(token);
 
     if(!token)  
         return res.sendStatus(401);
@@ -146,7 +148,6 @@ app.get("/getUserDetails",authenticate, (req, res)=> {
 
 app.post("/sendsConnection", authenticate, (req, res)=>{
     
-    
     let session = driver.session();
     session.run("MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)",{
         usernameP: req.username,
@@ -205,6 +206,73 @@ app.post("/acceptConnection", authenticate, (req, res)=>{
         session1.close();
     })
 
+})
+
+app.get("/getConnections", authenticate, (req, res)=>{
+    
+    let session = driver.session();
+    session.run("MATCH (u:User {username: $usernameP})-[c:Connection]->(n:User) RETURN n", {
+        usernameP: req.username,
+    })
+    .then((result)=>{
+        res.status(200);
+        let usernames = [];
+        result.records.map((record)=>{
+            usernames.push(record._fields[0].properties.username);
+        })
+        res.send(usernames);
+    })
+})
+
+app.post("/getUserData", authenticate, (req, res)=>{
+    let session = driver.session();
+
+    session.run("MATCH (u:User{username: $usernameP})-[Connection]->(v:User{username: $currentUser}) RETURN u",{
+        usernameP: req.body.Username, 
+        currentUser: req.username,
+    })
+    .then((result)=>{
+        if(result.records.length>0){
+            let data = result.records[0]._fields[0].properties;
+            data["degree"] = 1;
+            delete data.password;
+            res.send(data);
+            session.close();
+        }
+        else{
+            session.run("MATCH (u:User{username: $usernameP})-[Connection*..2]->(v:User{username: $currentUser}) RETURN u", {
+                usernameP: req.body.Username,
+                currentUser: req.username,
+            })
+            .then((result)=>{
+                if(result.records.length>0){
+                    let data = result.records[0]._fields[0].properties;
+                    data["degree"] = 2;
+                    delete data.password;
+                    res.send(data);
+                    session.close();
+                }
+                else{
+                    session.run("MATCH (u:User {username: $usernameP}) RETURN u", {
+                        usernameP: req.body.Username
+                    })
+                    .then((result)=>{
+                        if(result.records.length>0){
+                            delete result.records[0]._fields[0].properties.password;   
+                            res.send(result.records[0]._fields[0].properties)
+                            session.close();
+                        }
+                        else{
+                            res.status(404);
+                            res.send({message: "User Not found"});
+                        }
+                    })
+                }
+            })
+        }
+    })
+    
+    
 })
 
 app.get("/close", (req, res)=>{
