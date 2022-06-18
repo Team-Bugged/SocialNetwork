@@ -31,73 +31,68 @@ const authenticate  = (req, res, next)=> {
     })
 }
 
-// app.use(authenticate);
-
-
-const driver = neo4j.driver(
-    'neo4j://localhost',
-    neo4j.auth.basic(process.env.DB_NAME, process.env.DB_PASSWORD)
-);
+const driver = neo4j.driver(process.env.URI, neo4j.auth.basic(process.env.DB_USER, process.env.PASSWORD));
+const session = driver.session();
 
 app.get("/", (req, res)=>{
         res.send("Hello world");
 })
 
-app.post("/register", (req, res) =>{
+app.post("/register", async (req, res) =>{
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
-    bcrypt.hash(password, saltRounds, function(err, hash) {
-        // Store hash in your password DB.
-        if(err)
-            console.log(err);
-        password = hash;
-        let session = driver.session();
+    console.log("register hit");
+    let hash = await bcrypt.hash(password, saltRounds);
 
-        session
-        .run('MATCH (u:User {username: $usernameP}) RETURN u', {
-            usernameP: username})
-        .then((result)=>{
-            //if already present conflict status 409
-            if(result.records.length>0){
-                res.status(409);
-                res.send({meassage: "username already exists"});
-                return;
-            }
-            // session.close();
-            // session = driver.session();
-            session.run('CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP})',{
+    // Store hash in your password DB.
+    if(!hash)
+        console.log(hashError);
+    password = hash;
+    
+    console.log("hash generated");
+        var readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
+        var result = await session.readTransaction(tx =>
+            tx.run(readQuery, {usernameP: username})
+        );
+        console.log("results for already match are: ", result);
+        //if already present conflict status 409
+        if(result.records.length>0){
+            res.status(409);
+            res.send({meassage: "username already exists"});
+            return;
+        }
+        
+        var writeQuery = 'CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP})';
+        result = await session.writeTransaction(tx => {
+            tx.run(writeQuery, {
                 usernameP: username,
                 emailP: email,
                 passwordP: password
             })
-            .then(result => {
-                    console.log(result)    
-                    res.status(200);
-                    res.send({"message": "Successfully Registered"});
-                })
-            .catch(error => {
-                console.log(error)
-            })
-            .then(()=>{
-                session.close();
-            })
-        })
-        .catch();
-    });
+        });
+
+        console.log(result)    
+        res.status(200);
+        res.send({"message": "Successfully Registered"});
     
 })
 
-app.post("/login", (req, res)=>{
+app.post("/login", async (req, res)=>{
     let username = req.body.username;
     let password = req.body.password;
-    let session = driver.session();
-
-    session.run('MATCH (u:User {username: $usernameP}) RETURN u',{
-        usernameP: username,
-    })
-    .then((result)=>{
-        if(result.records.length>0){
+    
+    
+    let readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
+    let result = await session.readTransaction(tx =>
+        tx.run(readQuery, {
+            usernameP: username
+        })
+    )
+  
+    console.log(result.records);
+    console.log(result.records[0]._fields);
+    if(result.records.length>0){
             let props =  result.records[0]._fields[0].properties;
             bcrypt.compare(password, props.password, function(err, result) {
                 if(result){
@@ -114,42 +109,36 @@ app.post("/login", (req, res)=>{
             res.status(404);
             res.send({message: "Username not found do register"});
         }
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.send(err);
-    })
-    .then(()=>{
-        session.close();
-    })
-
    
 })  
 
-app.get("/getUserDetails",authenticate, (req, res)=> {
-    let session = driver.session();
+app.get("/getUserDetails",authenticate, async (req, res)=> {
+    
 
-    session.run('MATCH (u:User {username: $usernameP}) RETURN u', {
-        usernameP: req.username,
-    })
-    .then((result)=>{
+    let readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
+    let result = await session.readTransaction(tx => 
+        tx.run(readQuery, {
+            usernameP :req.username
+        }))
+
+    console.log(result);
+    console.log(result.records);
+    if(neo4j.records.length>0)
+    {
         console.log(result);
         res.status(200);
         res.send(result.records[0]._fields[0].properties);
-    })
-    .catch((err)=>{
+    }
+    else{
         console.log(err);
         res.send({message: err});
-    })
-    .then(()=>{
-        session.close();
-    })
+    }
 })
 
 app.post("/sendsConnection", authenticate, (req, res)=>{
     
-    let session = driver.session();
-    session.run("MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)",{
+    
+    session.writeTransaction("MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)",{
         usernameP: req.username,
         connectToP: req.body.connectTo,
     })
@@ -164,7 +153,6 @@ app.post("/sendsConnection", authenticate, (req, res)=>{
         console.log(err);
         // res.send(err);
         res.status(500)
-        session.close()
         res.send({message:"Error"});
     })
 
@@ -173,9 +161,9 @@ app.post("/sendsConnection", authenticate, (req, res)=>{
 app.post("/acceptConnection", authenticate, (req, res)=>{
     
     let acceptConnectionFrom = req.body.acceptConnectionFrom;
-    let session = driver.session();
+    
 
-    session.run('MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP CREATE (a)-[c:Connection]->(b) CREATE (a)<-[r:Connection]-(b) RETURN c, r',{
+    session.writeTransaction('MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP CREATE (a)-[c:Connection]->(b) CREATE (a)<-[r:Connection]-(b) RETURN c, r',{
         usernameP: req.username,
         acceptConnectionFromP: acceptConnectionFrom,
     })
@@ -183,35 +171,30 @@ app.post("/acceptConnection", authenticate, (req, res)=>{
         console.log(result);
         res.status(200);
         res.send({message:"Success"})
-        session.close()
     })
     .catch((err)=>{
         console.log(err);
         res.status(500)
-        session.close()
         res.send({message:"Error"});
     })
 
-    let session1 = driver.session();
-    session1.run('MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP DELETE s',{
+    session.writeTransaction('MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP DELETE s',{
         usernameP: req.username,
         acceptConnectionFromP: acceptConnectionFrom,
     })
     .then((result)=>{
         console.log(result);
-        session1.close()
     })
     .catch((err)=>{
         console.log(err);
-        session1.close();
     })
 
 })
 
 app.get("/getConnections", authenticate, (req, res)=>{
     
-    let session = driver.session();
-    session.run("MATCH (u:User {username: $usernameP})-[c:Connection]->(n:User) RETURN n", {
+    
+    session.readTransaction("MATCH (u:User {username: $usernameP})-[c:Connection]->(n:User) RETURN n", {
         usernameP: req.username,
     })
     .then((result)=>{
@@ -225,9 +208,9 @@ app.get("/getConnections", authenticate, (req, res)=>{
 })
 
 app.post("/getUserData", authenticate, (req, res)=>{
-    let session = driver.session();
+    
 
-    session.run("MATCH (u:User{username: $usernameP})-[Connection]->(v:User{username: $currentUser}) RETURN u",{
+    session.readTransaction("MATCH (u:User{username: $usernameP})-[Connection]->(v:User{username: $currentUser}) RETURN u",{
         usernameP: req.body.Username, 
         currentUser: req.username,
     })
@@ -237,10 +220,9 @@ app.post("/getUserData", authenticate, (req, res)=>{
             data["degree"] = 1;
             delete data.password;
             res.send(data);
-            session.close();
         }
         else{
-            session.run("MATCH (u:User{username: $usernameP})-[Connection*..2]->(v:User{username: $currentUser}) RETURN u", {
+            session.readTransaction("MATCH (u:User{username: $usernameP})-[Connection*..2]->(v:User{username: $currentUser}) RETURN u", {
                 usernameP: req.body.Username,
                 currentUser: req.username,
             })
@@ -250,17 +232,15 @@ app.post("/getUserData", authenticate, (req, res)=>{
                     data["degree"] = 2;
                     delete data.password;
                     res.send(data);
-                    session.close();
                 }
                 else{
-                    session.run("MATCH (u:User {username: $usernameP}) RETURN u", {
+                    session.readTransaction("MATCH (u:User {username: $usernameP}) RETURN u", {
                         usernameP: req.body.Username
                     })
                     .then((result)=>{
                         if(result.records.length>0){
                             delete result.records[0]._fields[0].properties.password;   
                             res.send(result.records[0]._fields[0].properties)
-                            session.close();
                         }
                         else{
                             res.status(404);
