@@ -90,8 +90,8 @@ app.post("/login", async (req, res)=>{
         })
     )
   
-    console.log(result.records);
-    console.log(result.records[0]._fields);
+        console.log(result.records);
+        // console.log(result.records[0]._fields);
     if(result.records.length>0){
             let props =  result.records[0]._fields[0].properties;
             bcrypt.compare(password, props.password, function(err, result) {
@@ -155,6 +155,21 @@ app.post("/sendsConnection", authenticate, async (req, res)=>{
     //     res.send({message:"Error"});
     // })
 
+})
+
+app.get("/getIncomingConnections", authenticate, async(req, res)=>{
+    let readQuery = "MATCH (u:User{username:$usernameP})<-[s:SendsConnection]-(v:User) RETURN v;";
+    let result = await session.readTransaction(tx =>
+        tx.run(readQuery, {
+            usernameP: req.username,
+        }))
+
+        res.status(200);
+        let incomingConnections = [];
+        result.records.map((record)=>{
+            incomingConnections.push(record._fields[0].properties.username);
+        })
+        res.send(incomingConnections);
 })
 
 app.post("/acceptConnection", authenticate, async (req, res)=>{
@@ -264,7 +279,7 @@ app.post("/getUserData", authenticate, async (req, res)=>{
 
 app.get("/getSuggestions", authenticate, async (req, res)=>{
     
-    let readQuery = "MATCH (u:User{username:'nitin'})-[c1:Connection]->(v:User)-[c2:Connection]->(w: User) RETURN w;";
+    let readQuery = "MATCH (u:User{username:'$usernameP'})-[c1:Connection]->(v:User)-[c2:Connection]->(w: User) RETURN w;";
     let result = await session.readTransaction(tx =>
         tx.run(readQuery, {
             usernameP: req.username,
