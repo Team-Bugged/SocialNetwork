@@ -15,9 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const authenticate  = (req, res, next)=> {
     const authHeader = req.headers['authorization'];
-    console.log(authHeader)
+    // console.log(authHeader)
     const token = authHeader  && authHeader.split(' ')[1];
-    console.log(token);
+    // console.log(token);
 
     if(!token)  
         return res.sendStatus(401);
@@ -42,7 +42,7 @@ app.post("/register", async (req, res) =>{
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
-    console.log("register hit");
+    // console.log("register hit");
     let hash = await bcrypt.hash(password, saltRounds);
 
     // Store hash in your password DB.
@@ -50,12 +50,12 @@ app.post("/register", async (req, res) =>{
         console.log(hashError);
     password = hash;
     
-    console.log("hash generated");
+    // console.log("hash generated");
         var readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
         var result = await session.readTransaction(tx =>
             tx.run(readQuery, {usernameP: username})
         );
-        console.log("results for already match are: ", result);
+        // console.log("results for already match are: ", result);
         //if already present conflict status 409
         if(result.records.length>0){
             res.status(409);
@@ -72,7 +72,7 @@ app.post("/register", async (req, res) =>{
             })
         });
 
-        console.log(result)    
+        // console.log(result)    
         res.status(200);
         res.send({"message": "Successfully Registered"});
     
@@ -90,7 +90,7 @@ app.post("/login", async (req, res)=>{
         })
     )
   
-        console.log(result.records);
+        // console.log(result.records);
         // console.log(result.records[0]._fields);
     if(result.records.length>0){
             let props =  result.records[0]._fields[0].properties;
@@ -235,6 +235,7 @@ app.post("/getUserData", authenticate, async (req, res)=>{
             currentUser: req.username,
         }))
     // .then((result)=>{
+        // console.log(result.records.length);
         if(result.records.length>0){
             let data = result.records[0]._fields[0].properties;
             data["degree"] = 1;
@@ -242,8 +243,8 @@ app.post("/getUserData", authenticate, async (req, res)=>{
             res.send(data);
         }
         else{
-            readQuery = "MATCH (u:User{username: $usernameP})-[Connection*..2]->(v:User{username: $currentUser}) RETURN u";
-            result = session.readTransaction(tx =>
+            readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(w:User)-[c2:Connection]->(v:User{username: $currentUser}) RETURN u";
+            result = await session.readTransaction(tx =>
                 tx.run(readQuery, {
                     usernameP: req.body.Username,
                     currentUser: req.username,
@@ -256,15 +257,18 @@ app.post("/getUserData", authenticate, async (req, res)=>{
                     res.send(data);
                 }
                 else{
-                    readQuery = "MATCH (u:User {username: $usernameP}) RETURN u";
-                    result = session.readTransaction(tx =>
+                    readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(w:User)-[c2:Connection]->(x:User)-[c3:Connection]->(v:User{username: $currentUser}) RETURN u";
+                    result = await session.readTransaction(tx =>
                         tx.run(readQuery, {
-                            usernameP: req.body.Username
+                            usernameP: req.body.Username,
+                            currentUser: req.username
                         }))
                     // .then((result)=>{
                         if(result.records.length>0){
-                            delete result.records[0]._fields[0].properties.password;   
-                            res.send(result.records[0]._fields[0].properties)
+                            let data = result.records[0]._fields[0].properties;
+                            data["degree"] = 3;
+                            delete data.password;
+                            res.send(data);
                         }
                         else{
                             res.status(404);

@@ -9,11 +9,15 @@ export const UserPage = ()=>{
     useEffect(()=>{
         getUserData(params.username)
         .then((response)=>{
-            setConnectionData(response);
+            console.log(response);
+            setConnectionData(response.data);
         })
     }, [])
 
     return (<>
-        {/* {setConnectionData} */}
+            here is the data 
+            <br/> Email: {connectionData.email} 
+            <br/> UserName: {connectionData.username}
+            <br/> Degree: {connectionData.degree}
         </>)
 }

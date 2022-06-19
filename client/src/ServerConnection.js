@@ -56,7 +56,7 @@ export const sendsConnection = async (input) =>{
 export const getUserData = async (username) => {
     let response;
     const cookie = new Cookies();
-    response = await axios.post(`${URL}/getConnectionData`,{
+    response = await axios.post(`${URL}/getUserData`,{
         Username: username,
     },{
         headers: {
