@@ -260,8 +260,23 @@ app.post("/getUserData", authenticate, async (req, res)=>{
             // })
         }
     // })
+})
+
+app.get("/getSuggestions", authenticate, async (req, res)=>{
     
-    
+    let readQuery = "MATCH (u:User{username:'nitin'})-[c1:Connection]->(v:User)-[c2:Connection]->(w: User) RETURN w;";
+    let result = await session.readTransaction(tx =>
+        tx.run(readQuery, {
+            usernameP: req.username,
+        }))
+
+        res.status(200);
+        let suggestions = [];
+        result.records.map((record)=>{
+            if(record._fields[0].properties.username!=req.username)
+                suggestions.push(record._fields[0].properties.username);
+        })
+        res.send(suggestions);
 })
 
 app.get("/close", (req, res)=>{
