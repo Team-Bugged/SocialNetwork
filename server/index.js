@@ -15,9 +15,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const authenticate  = (req, res, next)=> {
     const authHeader = req.headers['authorization'];
-    // console.log(authHeader)
+    console.log(authHeader)
     const token = authHeader  && authHeader.split(' ')[1];
-    // console.log(token);
+    console.log(token);
 
     if(!token)  
         return res.sendStatus(401);
@@ -125,7 +125,9 @@ app.get("/getUserDetails",authenticate, async (req, res)=> {
     {
         console.log(result);
         res.status(200);
-        res.send(result.records[0]._fields[0].properties);
+        let data = result.records[0]._fields[0].properties;
+        delete data.password;
+        res.send(data);
     }
     else{
         console.log(err);
