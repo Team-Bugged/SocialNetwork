@@ -66,3 +66,16 @@ export const getUserData = async (username) => {
 
     return response;
 }
+
+export const getProfile = async ()=>{
+    let response;
+    const cookie = new Cookies();
+    response = await axios.get(`${URL}/getUserDetails`, 
+    {
+        headers: {
+            authorization: `Bearer ${cookie.get("token")}`
+        },
+    })
+
+    return response;
+}
