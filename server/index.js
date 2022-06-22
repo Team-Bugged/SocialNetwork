@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const authenticate = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  console.log(authHeader);
+  // console.log(authHeader);
   const token = authHeader && authHeader.split(" ")[1];
   console.log(token);
 
@@ -75,7 +75,7 @@ app.post("/register", async (req, res) =>{
               let latitude, longitude;
               let response = await axios.get('http://api.positionstack.com/v1/forward', {params});
 
-              console.log(response.data.data[0]);
+              // console.log(response.data.data[0]);
               latitude= response.data.data[0].latitude;
               longitude=response.data.data[0].longitude;    
               
@@ -142,7 +142,7 @@ app.get("/getUserDetails", authenticate, async (req, res) => {
   );
 
   if (result.records.length > 0) {
-    console.log(result);
+    // console.log(result);
     res.status(200);
     let data = result.records[0]._fields[0].properties;
     delete data.password;
@@ -165,7 +165,7 @@ app.post("/sendsConnection", authenticate, async (req, res) => {
     })
   );
 
-  console.log(result);
+  // console.log(result);
   // res.send(result);
   res.status(200);
   res.send({ message: "Success" });
@@ -210,7 +210,7 @@ app.post("/acceptConnection", authenticate, async (req, res) => {
     })
   );
 
-  console.log(result);
+  // console.log(result);
   res.status(200);
   res.send({ message: "Success" });
 
@@ -229,7 +229,7 @@ app.post("/acceptConnection", authenticate, async (req, res) => {
     })
   );
 
-  console.log(result);
+  // console.log(result);
 session.close();
   // .catch((err)=>{
   //     console.log(err);
@@ -324,18 +324,48 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
     })
   );
 
-  console.log(result);
-  res.status(200);
   let suggestions = [];
   result.records.map((record) => {
     if (record._fields[0].properties.username != req.username)
       suggestions.push(record._fields[0].properties);
   });
-  console.log(suggestions);
-  res.send(suggestions);
 
+  // console.log(result);
+  res.status(200);
+
+  readQuery = 'MATCH (u:User{username: $usernameP}) RETURN u;';
+  result = await session.readTransaction((tx) => 
+    tx.run(readQuery, {
+      usernameP: req.username,
+    })
+  );
+  
+  // console.log(suggestions);
+  // console.log(result);
+  suggestions.map((node)=>{
+    node.distance = distance(result.records[0]._fields[0].properties.latitude, result.records[0]._fields[0].properties.longitude,
+      node.latitude, node.longitude);
+  })
+  
+  suggestions.sort((a,b)=>{
+      return a.distance > b.distance? 1: a.distance===b.distance?0:-1; 
+  })
+  console.log(suggestions);
+
+
+  res.send(suggestions);
   session.close();
 });
+
+function distance(lat1, lon1, lat2, lon2) {
+	var p = 0.017453292519943295;    // Math.PI / 180
+	var c = Math.cos;
+	var a = 0.5 - c((lat2 - lat1) * p)/2 + 
+			c(lat1 * p) * c(lat2 * p) * 
+			(1 - c((lon2 - lon1) * p))/2;
+  
+	return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+}
 
 app.get("/close", (req, res) => {
   driver.close();
