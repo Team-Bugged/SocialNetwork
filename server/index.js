@@ -34,13 +34,15 @@ const driver = neo4j.driver(
   process.env.URI,
   neo4j.auth.basic(process.env.DB_USER, process.env.PASSWORD)
 );
-const session = driver.session();
 
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
 
 app.post("/register", async (req, res) =>{
+  
+    const session = driver.session();
+
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
@@ -95,10 +97,11 @@ app.post("/register", async (req, res) =>{
         }
         
         
-    
+    session.close();
 })
 
 app.post("/login", async (req, res) => {
+  const session = driver.session();
   let username = req.body.username;
   let password = req.body.password;
 
@@ -126,9 +129,11 @@ app.post("/login", async (req, res) => {
     res.status(404);
     res.send({ message: "Username not found do register" });
   }
+  session.close();
 });
 
 app.get("/getUserDetails", authenticate, async (req, res) => {
+  const session = driver.session();
   let readQuery = "MATCH (u:User {username: $usernameP}) RETURN u";
   let result = await session.readTransaction((tx) =>
     tx.run(readQuery, {
@@ -146,9 +151,11 @@ app.get("/getUserDetails", authenticate, async (req, res) => {
     console.log(err);
     res.send({ message: err });
   }
+  session.close();
 });
 
 app.post("/sendsConnection", authenticate, async (req, res) => {
+  const session = driver.session();
   var writeQuery =
     "MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)";
   var result = await session.writeTransaction((tx) =>
@@ -162,7 +169,7 @@ app.post("/sendsConnection", authenticate, async (req, res) => {
   // res.send(result);
   res.status(200);
   res.send({ message: "Success" });
-
+session.close();
   // .catch((err)=>{
   //     console.log(err);
   //     // res.send(err);
@@ -172,6 +179,7 @@ app.post("/sendsConnection", authenticate, async (req, res) => {
 });
 
 app.get("/getIncomingConnections", authenticate, async (req, res) => {
+  const session = driver.session();
   let readQuery =
     "MATCH (u:User{username:$usernameP})<-[s:SendsConnection]-(v:User) RETURN v;";
   let result = await session.readTransaction((tx) =>
@@ -186,9 +194,11 @@ app.get("/getIncomingConnections", authenticate, async (req, res) => {
     incomingConnections.push(record._fields[0].properties.username);
   });
   res.send(incomingConnections);
+  session.close();
 });
 
 app.post("/acceptConnection", authenticate, async (req, res) => {
+  const session = driver.session();
   let acceptConnectionFrom = req.body.acceptConnectionFrom;
 
   let writeQuery =
@@ -220,13 +230,14 @@ app.post("/acceptConnection", authenticate, async (req, res) => {
   );
 
   console.log(result);
-
+session.close();
   // .catch((err)=>{
   //     console.log(err);
   // })
 });
 
 app.get("/getConnections", authenticate, async (req, res) => {
+  const session = driver.session();
   let readQuery =
     "MATCH (u:User {username: $usernameP})-[c:Connection]->(n:User) RETURN n";
   let result = await session.readTransaction((tx) =>
@@ -241,9 +252,11 @@ app.get("/getConnections", authenticate, async (req, res) => {
     usernames.push(record._fields[0].properties.username);
   });
   res.send(usernames);
+  session.close();
 });
 
 app.post("/getUserData", authenticate, async (req, res) => {
+  const session = driver.session();
   let readQuery =
     "MATCH (u:User{username: $usernameP})-[Connection]->(v:User{username: $currentUser}) RETURN u";
   let result = await session.readTransaction((tx) =>
@@ -298,9 +311,11 @@ app.post("/getUserData", authenticate, async (req, res) => {
     // })
   }
   // })
+  session.close();
 });
 
 app.get("/getSuggestions", authenticate, async (req, res) => {
+  const session = driver.session();
   let readQuery =
     "MATCH (u:User{username: $usernameP })-[c1:Connection]->(v:User)-[c2:Connection]->(w: User) RETURN w;";
   let result = await session.readTransaction((tx) =>
@@ -318,6 +333,8 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
   });
   console.log(suggestions);
   res.send(suggestions);
+
+  session.close();
 });
 
 app.get("/close", (req, res) => {

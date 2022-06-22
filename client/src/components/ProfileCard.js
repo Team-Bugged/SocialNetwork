@@ -15,7 +15,7 @@ import PersonIcon from '@mui/icons-material/Person';
 
 
 
-export const ProfileCard=()=> {
+export const ProfileCard=(props)=> {
   return (
     <Card sx={{ px:2,mr:3,borderRadius:8,minWidth: 275}} align="center">
       <CardMedia sx={{mt:2}} align="center">
@@ -28,10 +28,10 @@ export const ProfileCard=()=> {
       </CardMedia>
       <CardContent>
         <Typography sx={{ fontSize:20}}>
-          Sahil
+          {props.profileData.username}
         </Typography>
         <Typography sx={{ mt:2,fontSize: 15 }} color="text.secondary" gutterBottom>
-          MERN Developer | Computer Science Student
+          {props.profileData.about}
         </Typography>
        
         <hr/>
@@ -56,7 +56,7 @@ export const ProfileCard=()=> {
         <ListItemIcon>
           <DraftsIcon color="primary" />
         </ListItemIcon>
-        <ListItemText primary="sahil@gmail.com" />
+        <ListItemText primary={props.profileData.email} />
       </ListItemButton>      
     </List>
     </CardContent>
