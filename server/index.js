@@ -191,7 +191,7 @@ app.get("/getIncomingConnections", authenticate, async (req, res) => {
   res.status(200);
   let incomingConnections = [];
   result.records.map((record) => {
-    incomingConnections.push(record._fields[0].properties.username);
+    incomingConnections.push(record._fields[0].properties);
   });
   res.send(incomingConnections);
   session.close();
@@ -329,7 +329,7 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
   let suggestions = [];
   result.records.map((record) => {
     if (record._fields[0].properties.username != req.username)
-      suggestions.push(record._fields[0].properties.username);
+      suggestions.push(record._fields[0].properties);
   });
   console.log(suggestions);
   res.send(suggestions);
