@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "./ServerConnection";
+import Grid from '@mui/material/Grid';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -66,84 +71,139 @@ const Register = () => {
         })
     }
   };
+  const theme=createTheme();
+  theme.typography.h3={
+    fontSize: '1.2rem',
+    
+  '@media (min-width:600px)': {
+    fontSize: '1.5rem',
+  },
+  [theme.breakpoints.up('md')]: {
+    fontSize: '2.4rem',
+  },
+};
+
   return (
     <>
+     <ThemeProvider theme={theme}>
+     <Grid  container
+    spacing={0}
+    align="center"
+    justify="center"
+    direction="column"
+    justifyContent="center"
+  style={{ minHeight: '100vh' }}
+    >
       <div className="login-page">
         <div className="form">
           <div className="login">
-            <div className="login-header">
-              <h3>Register</h3>
-              <p>Please enter your credentials to register.</p>
+          <div className="login-header">
+                <ThemeProvider theme={theme}>
+                 <Typography component="h1" variant="h3" color="#00a0dc"> Register</Typography>
+                  <Typography component="h1" variant="h4" color="#00a0dc"> Please enter your credentials to register.</Typography>
+                </ThemeProvider>
             </div>
             <form className="login-form">
               <div>
-                <label for="name">
-                  <b>Name</b>
-                </label>
-                <input
-                  type="text"
-                  placeholder="name"
-                  value={name}
-                  onChange={handleNameChange}
-                  name="name"
-                  required
-                />
-                <label for="username">
-                  <b>UserName</b>
-                </label>
-                <input
-                  type="text"
-                  placeholder="username"
-                  value={username}
-                  onChange={handleUserNameChange}
-                  name="username"
-                  required
-                />
-                <label for="email">
-                  <b>EMail</b>
-                </label>
-                <input
-                  type="text"
-                  placeholder="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  name="email"
-                  required
-                />
-                <label for="password">
-                  <b>Password</b>
-                </label>
-                <input
-                  type="password"
-                  placeholder="password"
-                  value={password}
-                  onChange={handlePasswordChange}
-                  name="password"
-                  required
-                />
-                <label for="confirmpassword">
-                  <b>Confirm Password</b>
-                </label>
-                <input
-                  type="password"
-                  placeholder="confirm password"
-                  value={confirmPassword}
-                  onChange={handleConfirmPasswordChange}
-                  name="confirmpassword"
-                  required
-                />
-                <button
-                  className="signup-btn"
-                  disabled={disabledFlag}
-                  onClick={handleRegisterSubmit}
-                >
-                  {isLoading ? "Loading": "Sign Up"}
-                </button>
+              <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+             
+              id="name"
+              label="name"
+              autoComplete="name"
+              value={name}
+              onChange={handleNameChange}
+             
+              autoFocus
+            />  
+               <br/>
+
+                <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+              type="text"
+              id="username"
+              label="username"
+              autoComplete="username"
+              value={username}
+              onChange={handleUserNameChange}
+              name="username"
+              autoFocus
+            />  
+                <br/>
+
+                <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+              type="text"
+              id="email"
+              label="email"
+              autoComplete="email"
+              value={email}
+              onChange={handleEmailChange}
+              name="email"
+              autoFocus
+            />  
+                <br/>
+
+               <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+              type="password"
+              id="email"
+              label="password"
+              autoComplete="email"
+              value={password}
+              onChange={handlePasswordChange}
+              name="password"
+              autoFocus
+            />  
+                <br/>
+
+                <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+              type="password"
+              id="email"
+              label="confirm password"
+              autoComplete="email"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              name="confirmpassword"
+              autoFocus
+            /> 
+                <br />
+                <Button
+              type="submit"
+              
+              variant="contained"
+              disabled={disabledFlag}
+              onClick={handleRegisterSubmit}
+              sx={{ mt: 3, mb: 2 }}
+            >
+             {isLoading ? "Loading": "Sign Up"}
+                
+                  
+                  </Button>
+                
               </div>
             </form>
           </div>
         </div>
       </div>
+      </Grid>
+      </ThemeProvider>
     </>
   );
 };
