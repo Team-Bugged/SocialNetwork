@@ -42,6 +42,7 @@ app.post("/register", async (req, res) =>{
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
+    let about = req.body.about;
     // console.log("register hit");
     let hash = await bcrypt.hash(password, saltRounds);
 
@@ -63,12 +64,13 @@ app.post("/register", async (req, res) =>{
             return;
         }
         
-        var writeQuery = 'CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP})';
+        var writeQuery = 'CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP, about: $aboutP})';
         result = await session.writeTransaction(tx => {
             tx.run(writeQuery, {
                 usernameP: username,
                 emailP: email,
-                passwordP: password
+                passwordP: password,
+                aboutP: about,  
             })
         });
 
