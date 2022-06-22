@@ -3,7 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const neo4j = require("neo4j-driver");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 const saltRounds = 10;
 const app = express();
@@ -13,30 +13,31 @@ const PORT = process.env.PORT;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const authenticate  = (req, res, next)=> {
-    const authHeader = req.headers['authorization'];
-    console.log(authHeader)
-    const token = authHeader  && authHeader.split(' ')[1];
-    console.log(token);
+const authenticate = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  console.log(authHeader);
+  const token = authHeader && authHeader.split(" ")[1];
+  console.log(token);
 
-    if(!token)  
-        return res.sendStatus(401);
+  if (!token) return res.sendStatus(401);
 
-    jwt.verify(token, process.env.SECRET_KEY, (err, user)=>{
-        if(err)
-            res.send(err);
+  jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
+    if (err) res.send(err);
 
-        req.username = user;
-        next();
-    })
-}
+    req.username = user;
+    next();
+  });
+};
 
-const driver = neo4j.driver(process.env.URI, neo4j.auth.basic(process.env.DB_USER, process.env.PASSWORD));
+const driver = neo4j.driver(
+  process.env.URI,
+  neo4j.auth.basic(process.env.DB_USER, process.env.PASSWORD)
+);
 const session = driver.session();
 
-app.get("/", (req, res)=>{
-        res.send("Hello world");
-})
+app.get("/", (req, res) => {
+  res.send("Hello world");
+});
 
 app.post("/register", async (req, res) =>{
     let username = req.body.username;
@@ -74,239 +75,260 @@ app.post("/register", async (req, res) =>{
             })
         });
 
-        // console.log(result)    
-        res.status(200);
-        res.send({"message": "Successfully Registered"});
-    
-})
+  // console.log("hash generated");
+  var readQuery = "MATCH (u:User {username: $usernameP}) RETURN u";
+  var result = await session.readTransaction((tx) =>
+    tx.run(readQuery, { usernameP: username })
+  );
+  // console.log("results for already match are: ", result);
+  //if already present conflict status 409
+  if (result.records.length > 0) {
+    res.status(409);
+    res.send({ meassage: "username already exists" });
+    return;
+  }
 
-app.post("/login", async (req, res)=>{
-    let username = req.body.username;
-    let password = req.body.password;
-    
-    
-    let readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
-    let result = await session.readTransaction(tx =>
+  var writeQuery =
+    "CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP})";
+  result = await session.writeTransaction((tx) => {
+    tx.run(writeQuery, {
+      usernameP: username,
+      emailP: email,
+      passwordP: password,
+    });
+  });
+
+  // console.log(result)
+  res.status(200);
+  res.send({ message: "Successfully Registered" });
+});
+
+app.post("/login", async (req, res) => {
+  let username = req.body.username;
+  let password = req.body.password;
+
+  let readQuery = "MATCH (u:User {username: $usernameP}) RETURN u";
+  let result = await session.readTransaction((tx) =>
+    tx.run(readQuery, {
+      usernameP: username,
+    })
+  );
+
+  // console.log(result.records);
+  // console.log(result.records[0]._fields);
+  if (result.records.length > 0) {
+    let props = result.records[0]._fields[0].properties;
+    bcrypt.compare(password, props.password, function (err, result) {
+      if (result) {
+        const TOKEN = jwt.sign(username, process.env.SECRET_KEY);
+        res.json({ token: TOKEN });
+      } else {
+        res.status(401);
+        res.send({ message: "Unauthorized access" });
+      }
+    });
+  } else {
+    res.status(404);
+    res.send({ message: "Username not found do register" });
+  }
+});
+
+app.get("/getUserDetails", authenticate, async (req, res) => {
+  let readQuery = "MATCH (u:User {username: $usernameP}) RETURN u";
+  let result = await session.readTransaction((tx) =>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    })
+  );
+
+  if (result.records.length > 0) {
+    console.log(result);
+    res.status(200);
+    let data = result.records[0]._fields[0].properties;
+    delete data.password;
+    res.send(data);
+  } else {
+    console.log(err);
+    res.send({ message: err });
+  }
+});
+
+app.post("/sendsConnection", authenticate, async (req, res) => {
+  var writeQuery =
+    "MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)";
+  var result = await session.writeTransaction((tx) =>
+    tx.run(writeQuery, {
+      usernameP: req.username,
+      connectToP: req.body.connectTo,
+    })
+  );
+
+  console.log(result);
+  // res.send(result);
+  res.status(200);
+  res.send({ message: "Success" });
+
+  // .catch((err)=>{
+  //     console.log(err);
+  //     // res.send(err);
+  //     res.status(500)
+  //     res.send({message:"Error"});
+  // })
+});
+
+app.get("/getIncomingConnections", authenticate, async (req, res) => {
+  let readQuery =
+    "MATCH (u:User{username:$usernameP})<-[s:SendsConnection]-(v:User) RETURN v;";
+  let result = await session.readTransaction((tx) =>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    })
+  );
+
+  res.status(200);
+  let incomingConnections = [];
+  result.records.map((record) => {
+    incomingConnections.push(record._fields[0].properties.username);
+  });
+  res.send(incomingConnections);
+});
+
+app.post("/acceptConnection", authenticate, async (req, res) => {
+  let acceptConnectionFrom = req.body.acceptConnectionFrom;
+
+  let writeQuery =
+    "MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP CREATE (a)-[c:Connection]->(b) CREATE (a)<-[r:Connection]-(b) RETURN c, r";
+  let result = await session.writeTransaction((tx) =>
+    tx.run(writeQuery, {
+      usernameP: req.username,
+      acceptConnectionFromP: acceptConnectionFrom,
+    })
+  );
+
+  console.log(result);
+  res.status(200);
+  res.send({ message: "Success" });
+
+  // .catch((err)=>{
+  //     console.log(err);
+  //     res.status(500)
+  //     res.send({message:"Error"});
+  // })
+
+  writeQuery =
+    "MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP DELETE s";
+  result = await session.writeTransaction((tx) =>
+    tx.run(writeQuery, {
+      usernameP: req.username,
+      acceptConnectionFromP: acceptConnectionFrom,
+    })
+  );
+
+  console.log(result);
+
+  // .catch((err)=>{
+  //     console.log(err);
+  // })
+});
+
+app.get("/getConnections", authenticate, async (req, res) => {
+  let readQuery =
+    "MATCH (u:User {username: $usernameP})-[c:Connection]->(n:User) RETURN n";
+  let result = await session.readTransaction((tx) =>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    })
+  );
+
+  res.status(200);
+  let usernames = [];
+  result.records.map((record) => {
+    usernames.push(record._fields[0].properties.username);
+  });
+  res.send(usernames);
+});
+
+app.post("/getUserData", authenticate, async (req, res) => {
+  let readQuery =
+    "MATCH (u:User{username: $usernameP})-[Connection]->(v:User{username: $currentUser}) RETURN u";
+  let result = await session.readTransaction((tx) =>
+    tx.run(readQuery, {
+      usernameP: req.body.Username,
+      currentUser: req.username,
+    })
+  );
+  // .then((result)=>{
+  // console.log(result.records.length);
+  if (result.records.length > 0) {
+    let data = result.records[0]._fields[0].properties;
+    data["degree"] = 1;
+    delete data.password;
+    res.send(data);
+  } else {
+    readQuery =
+      "MATCH (u:User{username: $usernameP})-[c1:Connection]->(w:User)-[c2:Connection]->(v:User{username: $currentUser}) RETURN u";
+    result = await session.readTransaction((tx) =>
+      tx.run(readQuery, {
+        usernameP: req.body.Username,
+        currentUser: req.username,
+      })
+    );
+    // .then((result)=>{
+    if (result.records.length > 0) {
+      let data = result.records[0]._fields[0].properties;
+      data["degree"] = 2;
+      delete data.password;
+      res.send(data);
+    } else {
+      readQuery =
+        "MATCH (u:User{username: $usernameP})-[c1:Connection]->(w:User)-[c2:Connection]->(x:User)-[c3:Connection]->(v:User{username: $currentUser}) RETURN u";
+      result = await session.readTransaction((tx) =>
         tx.run(readQuery, {
-            usernameP: username
+          usernameP: req.body.Username,
+          currentUser: req.username,
         })
-    )
-  
-        // console.log(result.records);
-        // console.log(result.records[0]._fields);
-    if(result.records.length>0){
-            let props =  result.records[0]._fields[0].properties;
-            bcrypt.compare(password, props.password, function(err, result) {
-                if(result){
-                    const TOKEN = jwt.sign(username, process.env.SECRET_KEY);
-                    res.json({token: TOKEN}); 
-                }
-                else{
-                    res.status(401);
-                    res.send({message: "Unauthorized access"});
-                }
-            });
-        }
-        else{
-            res.status(404);
-            res.send({message: "Username not found do register"});
-        }
-   
-})  
-
-app.get("/getUserDetails",authenticate, async (req, res)=> {
-    
-
-    let readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
-    let result = await session.readTransaction(tx => 
-        tx.run(readQuery, {
-            usernameP :req.username
-        }))
-
-    if(result.records.length>0)
-    {
-        console.log(result);
-        res.status(200);
+      );
+      // .then((result)=>{
+      if (result.records.length > 0) {
         let data = result.records[0]._fields[0].properties;
+        data["degree"] = 3;
         delete data.password;
         res.send(data);
+      } else {
+        res.status(404);
+        res.send({ message: "User Not found" });
+      }
+      // })
     }
-    else{
-        console.log(err);
-        res.send({message: err});
-    }
-})
-
-app.post("/sendsConnection", authenticate, async (req, res)=>{
-    
-    
-    var writeQuery = "MATCH (a:User),(b:User) WHERE a.username = $usernameP AND b.username = $connectToP CREATE (a)-[r:SendsConnection]->(b) RETURN type(r)";
-    var result = await session.writeTransaction(tx =>
-        tx.run(writeQuery,{
-            usernameP: req.username,
-            connectToP: req.body.connectTo,
-        }))
-   
-        console.log(result);
-        // res.send(result);
-        res.status(200);
-        res.send({message:"Success"});
-    
-    // .catch((err)=>{
-    //     console.log(err);
-    //     // res.send(err);
-    //     res.status(500)
-    //     res.send({message:"Error"});
     // })
+  }
+  // })
+});
 
-})
+app.get("/getSuggestions", authenticate, async (req, res) => {
+  let readQuery =
+    "MATCH (u:User{username: $usernameP })-[c1:Connection]->(v:User)-[c2:Connection]->(w: User) RETURN w;";
+  let result = await session.readTransaction((tx) =>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    })
+  );
 
-app.get("/getIncomingConnections", authenticate, async(req, res)=>{
-    let readQuery = "MATCH (u:User{username:$usernameP})<-[s:SendsConnection]-(v:User) RETURN v;";
-    let result = await session.readTransaction(tx =>
-        tx.run(readQuery, {
-            usernameP: req.username,
-        }))
+  console.log(result);
+  res.status(200);
+  let suggestions = [];
+  result.records.map((record) => {
+    if (record._fields[0].properties.username != req.username)
+      suggestions.push(record._fields[0].properties.username);
+  });
+  console.log(suggestions);
+  res.send(suggestions);
+});
 
-        res.status(200);
-        let incomingConnections = [];
-        result.records.map((record)=>{
-            incomingConnections.push(record._fields[0].properties.username);
-        })
-        res.send(incomingConnections);
-})
+app.get("/close", (req, res) => {
+  driver.close();
+});
 
-app.post("/acceptConnection", authenticate, async (req, res)=>{
-    
-    let acceptConnectionFrom = req.body.acceptConnectionFrom;
-    
-
-    let writeQuery = 'MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP CREATE (a)-[c:Connection]->(b) CREATE (a)<-[r:Connection]-(b) RETURN c, r';
-    let result = await session.writeTransaction(tx =>
-        tx.run(writeQuery,{
-            usernameP: req.username,
-            acceptConnectionFromP: acceptConnectionFrom,
-        }))
-   
-        console.log(result);
-        res.status(200);
-        res.send({message:"Success"})
-
-        // .catch((err)=>{
-    //     console.log(err);
-    //     res.status(500)
-    //     res.send({message:"Error"});
-    // })
-
-    writeQuery = 'MATCH (a:User)<-[s:SendsConnection]-(b:User) WHERE a.username = $usernameP AND b.username= $acceptConnectionFromP DELETE s';
-    result = await session.writeTransaction(tx =>
-        tx.run(writeQuery,{
-            usernameP: req.username,
-            acceptConnectionFromP: acceptConnectionFrom,
-        }))
-   
-        console.log(result);
-
-    // .catch((err)=>{
-    //     console.log(err);
-    // })
-
-})
-
-app.get("/getConnections", authenticate, async (req, res)=>{
-    
-    let readQuery = "MATCH (u:User {username: $usernameP})-[c:Connection]->(n:User) RETURN n";
-    let result = await session.readTransaction(tx =>
-        tx.run(readQuery, {
-            usernameP: req.username,
-        }))
-
-        res.status(200);
-        let usernames = [];
-        result.records.map((record)=>{
-            usernames.push(record._fields[0].properties.username);
-        })
-        res.send(usernames);
-})
-
-app.post("/getUserData", authenticate, async (req, res)=>{
-    
-
-    let readQuery = "MATCH (u:User{username: $usernameP})-[Connection]->(v:User{username: $currentUser}) RETURN u";
-    let result = await session.readTransaction(tx => 
-        tx.run(readQuery,{
-            usernameP: req.body.Username, 
-            currentUser: req.username,
-        }))
-    // .then((result)=>{
-        // console.log(result.records.length);
-        if(result.records.length>0){
-            let data = result.records[0]._fields[0].properties;
-            data["degree"] = 1;
-            delete data.password;
-            res.send(data);
-        }
-        else{
-            readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(w:User)-[c2:Connection]->(v:User{username: $currentUser}) RETURN u";
-            result = await session.readTransaction(tx =>
-                tx.run(readQuery, {
-                    usernameP: req.body.Username,
-                    currentUser: req.username,
-                }))
-            // .then((result)=>{
-                if(result.records.length>0){
-                    let data = result.records[0]._fields[0].properties;
-                    data["degree"] = 2;
-                    delete data.password;
-                    res.send(data);
-                }
-                else{
-                    readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(w:User)-[c2:Connection]->(x:User)-[c3:Connection]->(v:User{username: $currentUser}) RETURN u";
-                    result = await session.readTransaction(tx =>
-                        tx.run(readQuery, {
-                            usernameP: req.body.Username,
-                            currentUser: req.username
-                        }))
-                    // .then((result)=>{
-                        if(result.records.length>0){
-                            let data = result.records[0]._fields[0].properties;
-                            data["degree"] = 3;
-                            delete data.password;
-                            res.send(data);
-                        }
-                        else{
-                            res.status(404);
-                            res.send({message: "User Not found"});
-                        }
-                    // })
-                }
-            // })
-        }
-    // })
-})
-
-app.get("/getSuggestions", authenticate, async (req, res)=>{
-    
-    let readQuery = "MATCH (u:User{username:'$usernameP'})-[c1:Connection]->(v:User)-[c2:Connection]->(w: User) RETURN w;";
-    let result = await session.readTransaction(tx =>
-        tx.run(readQuery, {
-            usernameP: req.username,
-        }))
-
-        res.status(200);
-        let suggestions = [];
-        result.records.map((record)=>{
-            if(record._fields[0].properties.username!=req.username)
-                suggestions.push(record._fields[0].properties.username);
-        })
-        res.send(suggestions);
-})
-
-app.get("/close", (req, res)=>{
-    driver.close();
-})
-
-
-app.listen(PORT, ()=>{
-    console.log("app listening at port " + PORT);
-})
+app.listen(PORT, () => {
+  console.log("app listening at port " + PORT);
+});

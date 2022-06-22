@@ -9,7 +9,6 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
 const Login = () => {
-
   const [username, setusername] = useState("");
   const [password, setPassword] = useState("");
   const [disabledFlag, setDisabledFlag] = useState(true);
@@ -27,13 +26,12 @@ const Login = () => {
 
   const handleLoginSubmit = (event) => {
     event.preventDefault();
-        loginUser(username, password)
-        .then((response)=>{
-          if(response.status===200){
-            cookies.set('token', response.data.token, {maxAge: 3600});
-          }
-          navigate("/home");
-        })
+    loginUser(username, password).then((response) => {
+      if (response.status === 200) {
+        cookies.set("token", response.data.token, { maxAge: 3600 });
+      }
+      navigate("/home");
+    });
   };
 
   useEffect(() => {
