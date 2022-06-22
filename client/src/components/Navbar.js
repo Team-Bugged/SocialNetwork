@@ -11,7 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 const pages = ['Home', 'Network'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -36,10 +36,11 @@ export const Navbar = () => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" backgroundColor="#0a66c2">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+
+          <LinkedInIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
           <Typography
             variant="h6"
             noWrap
@@ -50,12 +51,11 @@ export const Navbar = () => {
               display: { xs: 'none', md: 'flex' },
               fontFamily: 'monospace',
               fontWeight: 700,
-              letterSpacing: '.3rem',
               color: 'inherit',
               textDecoration: 'none',
             }}
           >
-            LOGO
+            Social
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -94,7 +94,7 @@ export const Navbar = () => {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          <LinkedInIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
@@ -111,7 +111,7 @@ export const Navbar = () => {
               textDecoration: 'none',
             }}
           >
-            LOGO
+            Social
           </Typography>
           <Box sx={{mr:2, flexGrow: 1, display: { xs: 'none', md: 'flex' },justifyContent:'flex-end' }}>
             {pages.map((page) => (
