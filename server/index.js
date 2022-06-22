@@ -39,16 +39,41 @@ app.get("/", (req, res) => {
   res.send("Hello world");
 });
 
-app.post("/register", async (req, res) => {
-  let username = req.body.username;
-  let email = req.body.email;
-  let password = req.body.password;
-  // console.log("register hit");
-  let hash = await bcrypt.hash(password, saltRounds);
+app.post("/register", async (req, res) =>{
+    let username = req.body.username;
+    let email = req.body.email;
+    let password = req.body.password;
+    let about = req.body.about;
+    // console.log("register hit");
+    let hash = await bcrypt.hash(password, saltRounds);
 
-  // Store hash in your password DB.
-  if (!hash) console.log(hashError);
-  password = hash;
+    // Store hash in your password DB.
+    if(!hash)
+        console.log(hashError);
+    password = hash;
+    
+    // console.log("hash generated");
+        var readQuery = 'MATCH (u:User {username: $usernameP}) RETURN u';
+        var result = await session.readTransaction(tx =>
+            tx.run(readQuery, {usernameP: username})
+        );
+        // console.log("results for already match are: ", result);
+        //if already present conflict status 409
+        if(result.records.length>0){
+            res.status(409);
+            res.send({meassage: "username already exists"});
+            return;
+        }
+        
+        var writeQuery = 'CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP, about: $aboutP})';
+        result = await session.writeTransaction(tx => {
+            tx.run(writeQuery, {
+                usernameP: username,
+                emailP: email,
+                passwordP: password,
+                aboutP: about,  
+            })
+        });
 
   // console.log("hash generated");
   var readQuery = "MATCH (u:User {username: $usernameP}) RETURN u";

@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getConnections, sendsConnection } from "./ServerConnection"; 
 import { DisplayConnections } from "./DisplayConnections";
+import {Navbar} from "./components/Navbar";
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import { ProfileCard } from "./components/ProfileCard";
+import { Card, Typography } from "@mui/material";
+import { SuggestionCard } from "./components/SuggestionCard";
+import shadows from "@mui/material/styles/shadows";
+
 
 export const Home = ()=>{
     const cookies = new Cookies();
@@ -38,7 +46,63 @@ export const Home = ()=>{
         }
     }, [])
 
-    return (<>
+    return (
+    <Box height='100%' >
+        
+    <Navbar/>
+    <Box sx={{m:2,display:'flex'}}>
+        <ProfileCard/>
+        
+    <Box 
+      sx={{
+        p:2,
+        backgroundColor: 'white',
+    
+        borderRadius:7,
+        display: 'flex',
+        width: 870,
+        minHeight: 508,
+        flexWrap: 'wrap',
+        justifyContent:'space-between',
+        '& > :not(style)': {
+          m: 1,
+          mb:2,
+        //   border:1,
+        //   borderColor:'primary.dark',
+          borderRadius:5,          
+          width: 180,
+          height: 250,
+          
+        },
+        '& > :hover':{
+            cursor:'pointer',
+            backgroundColor:'secondary.main',
+            boxShadow:6,
+        }
+      }}
+    >
+      
+      <SuggestionCard/>
+      <SuggestionCard/>
+      <SuggestionCard/>
+      <SuggestionCard/>
+      <SuggestionCard/>
+      <SuggestionCard/>
+      <SuggestionCard/>
+      <SuggestionCard/>
+      
+      
+      
+    </Box>
+
+    </Box>
+    
+
+
+
+
+
+
     {connections.length>0? connections.map((con)=>{
         return <DisplayConnections key = {con} connections={con} />
     }) : "No connections"}
@@ -50,5 +114,5 @@ export const Home = ()=>{
         <button onClick={handleAddConnectionsSubmit}>Submit</button>
         </>:
         <></>}
-    </>)
+    </Box>)
 }
