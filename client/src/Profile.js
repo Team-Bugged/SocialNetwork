@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { ProfileCard } from "./components/ProfileCard";
 import { getProfile } from "./ServerConnection";
 
 export const Profile = ()=>{
@@ -21,16 +22,9 @@ export const Profile = ()=>{
     // },[dp])
     return (
         <>
+            
             {profileData?<div>
-                {profileData.username}
-                <br/>
-                {profileData.email}
-                {profileData.dp?<img src={profileData.dp}/>:
-                <div>
-                    <input type = "file" onChange={handleDpChange}/>
-                    {/* <button onClick={handleDpSubmit}/> */}
-                </div>
-                    }
+                <ProfileCard profileData = {profileData}/>
             </div>:"EMPTY"}
         </>
     )

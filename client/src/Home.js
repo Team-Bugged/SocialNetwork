@@ -10,6 +10,7 @@ import { ProfileCard } from "./components/ProfileCard";
 import { Card, Typography } from "@mui/material";
 import { SuggestionCard } from "./components/SuggestionCard";
 import shadows from "@mui/material/styles/shadows";
+import { Profile } from "./Profile";
 
 
 export const Home = ()=>{
@@ -51,7 +52,7 @@ export const Home = ()=>{
         
     <Navbar/>
     <Box sx={{m:2,display:'flex'}}>
-        <ProfileCard/>
+        <Profile/>
         
     <Box 
       sx={{
