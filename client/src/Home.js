@@ -11,6 +11,7 @@ import { Card, Typography } from "@mui/material";
 import { SuggestionCard } from "./components/SuggestionCard";
 import shadows from "@mui/material/styles/shadows";
 import { Profile } from "./Profile";
+import { GetSuggestions } from "./getSuggestions";
 
 
 export const Home = ()=>{
@@ -54,11 +55,13 @@ export const Home = ()=>{
     <Box sx={{m:2,display:'flex'}}>
         <Profile/>
         
+    <Box>
+        <h1>Incoming Connections: </h1>
     <Box 
       sx={{
-        p:2,
-        backgroundColor: 'white',
-    
+          p:2,
+          backgroundColor: 'white',
+          
         borderRadius:7,
         display: 'flex',
         width: 870,
@@ -82,19 +85,52 @@ export const Home = ()=>{
         }
       }}
     >
-      
+      {/* <SuggestionCard/>
       <SuggestionCard/>
       <SuggestionCard/>
       <SuggestionCard/>
       <SuggestionCard/>
       <SuggestionCard/>
       <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/>
+      <SuggestionCard/> */}
       
       
       
     </Box>
+    <h1>Suggested Connections: </h1>
+    <Box 
+      sx={{
+          p:2,
+          backgroundColor: 'white',
+          
+          borderRadius:7,
+          display: 'flex',
+          width: 870,
+        minHeight: 508,
+        flexWrap: 'wrap',
+        justifyContent:'space-between',
+        '& > :not(style)': {
+            m: 1,
+            mb:2,
+            //   border:1,
+            //   borderColor:'primary.dark',
+            borderRadius:5,          
+          width: 180,
+          height: 250,
+          
+        },
+        '& > :hover':{
+            cursor:'pointer',
+            backgroundColor:'secondary.main',
+            boxShadow:6,
+        }
+    }}
+    >
+    <GetSuggestions/>
+      
+    </Box>
+        </Box>
+    
 
     </Box>
     

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { SuggestionCard } from "./components/SuggestionCard";
 import { getSuggestions } from "./ServerConnection";
 
 export const GetSuggestions = () => {
-  const [getSuggestion, setGetSuggestion] = useState();
+  const [getSuggestion, setGetSuggestion] = useState([]);
   useEffect(() => {
     getSuggestions().then((response) => {
       console.log(response.data);
@@ -11,12 +12,10 @@ export const GetSuggestions = () => {
   }, []);
   return (
     <>
-      <div>
-        <h1>Suggestions</h1>
-        {getSuggestion?.map((username) => (
-          <div>{username}</div>
+
+        {getSuggestion?.map((userData) => (
+          <SuggestionCard userData = {userData}/>
         ))}
-      </div>
     </>
   );
 };
