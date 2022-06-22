@@ -46,7 +46,8 @@ export const Home = ()=>{
     }, [])
 
     return (
-    <Box height='100%' backgroundColor="#dce6f1" >
+    <Box height='100%' backgroundColor="#f3f2ef" >
+        
     <Navbar/>
     <Box sx={{m:2,display:'flex'}}>
         <ProfileCard/>
@@ -63,13 +64,16 @@ export const Home = ()=>{
         '& > :not(style)': {
           m: 1.5,
           mb:2,
-          border:1,
-          borderColor:'primary.dark',
+        //   border:1,
+        //   borderColor:'primary.dark',
           borderRadius:5,          
           width: 180,
           height: 250,
           
         },
+        '& > :hover':{
+            cursor:'pointer'
+        }
       }}
     >
       
