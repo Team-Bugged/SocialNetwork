@@ -17,7 +17,7 @@ import PersonIcon from '@mui/icons-material/Person';
 
 export const ProfileCard=()=> {
   return (
-    <Card sx={{ px:3,mr:3,borderRadius:8,minWidth: 275}} align="center">
+    <Card sx={{ px:2,mr:3,borderRadius:8,minWidth: 275}} align="center">
       <CardMedia sx={{mt:2}} align="center">
         <Avatar
          sx={{ width: 76, height: 76 }}

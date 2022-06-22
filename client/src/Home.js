@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import { ProfileCard } from "./components/ProfileCard";
 import { Card, Typography } from "@mui/material";
 import { SuggestionCard } from "./components/SuggestionCard";
+import shadows from "@mui/material/styles/shadows";
 
 
 export const Home = ()=>{
@@ -46,7 +47,7 @@ export const Home = ()=>{
     }, [])
 
     return (
-    <Box height='100%' backgroundColor="#f3f2ef" >
+    <Box height='100%' >
         
     <Navbar/>
     <Box sx={{m:2,display:'flex'}}>
@@ -55,14 +56,16 @@ export const Home = ()=>{
     <Box 
       sx={{
         p:2,
-        // backgroundColor: 'primary.dark',
+        backgroundColor: 'white',
+    
         borderRadius:7,
         display: 'flex',
-        width: 1000,
-        height: 508,
+        width: 870,
+        minHeight: 508,
         flexWrap: 'wrap',
+        justifyContent:'space-between',
         '& > :not(style)': {
-          m: 1.5,
+          m: 1,
           mb:2,
         //   border:1,
         //   borderColor:'primary.dark',
@@ -72,7 +75,9 @@ export const Home = ()=>{
           
         },
         '& > :hover':{
-            cursor:'pointer'
+            cursor:'pointer',
+            backgroundColor:'secondary.main',
+            boxShadow:6,
         }
       }}
     >
