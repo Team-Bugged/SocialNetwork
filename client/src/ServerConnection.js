@@ -3,12 +3,14 @@ const axios = require("axios").default;
 const URL = "http://localhost:5000";
 
 
-export const registerUser = async (username, password, email)=>{
+export const registerUser = async (username, password, email, about, location)=>{
     let response;
     response = await axios.post(`${URL}/register`,{
         username: username,
         password: password,
         email: email,
+        about: about,
+        location: location,
     })
     return response.status;
 }

@@ -4,6 +4,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const neo4j = require("neo4j-driver");
 const bcrypt = require('bcrypt');
+const axios = require('axios');
 
 const saltRounds = 10;
 const app = express();
@@ -63,20 +64,36 @@ app.post("/register", async (req, res) =>{
             res.send({meassage: "username already exists"});
             return;
         }
-        
-        var writeQuery = 'CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP, about: $aboutP})';
-        result = await session.writeTransaction(tx => {
-            tx.run(writeQuery, {
-                usernameP: username,
-                emailP: email,
-                passwordP: password,
-                aboutP: about,  
-            })
-        });
+        else{
+            const params = {
+                access_key: process.env.POSITIONSTACK_API_KEY,
+                query: req.body.location
+              }
+              let latitude, longitude;
+              let response = await axios.get('http://api.positionstack.com/v1/forward', {params});
 
-        // console.log(result)    
-        res.status(200);
-        res.send({"message": "Successfully Registered"});
+              console.log(response.data.data[0]);
+              latitude= response.data.data[0].latitude;
+              longitude=response.data.data[0].longitude;    
+              
+            var writeQuery = 'CREATE (:User {username: $usernameP, email: $emailP, password: $passwordP, about: $aboutP, longitude: $longitudeP, latitude: $latitudeP})';
+            result = await session.writeTransaction(tx => {
+                tx.run(writeQuery, {
+                    usernameP: username,
+                    emailP: email,
+                    passwordP: password,
+                    aboutP: about, 
+                    latitudeP: latitude,
+                    longitudeP: longitude, 
+                })
+            });
+
+            // console.log(result)    
+            res.status(200);
+            res.send({"message": "Successfully Registered"});
+        }
+        
+        
     
 })
 

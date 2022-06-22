@@ -15,6 +15,8 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [disabledFlag, setDisabledFlag] = useState(true);
   const [isLoading, setisLoading] = useState(false);
+  const [about, setAbout] = useState("");
+  const [location, setLocation] = useState("");
   const navigate = useNavigate();
 
   let passwordMatch = password === confirmPassword ? true : false;
@@ -29,7 +31,15 @@ const Register = () => {
   const handleEmailChange = (input) => {
     setEmail(input.target.value);
   };
+  
+  const handleAboutChange = (input) => {
+    setAbout(input.target.value);
+  };
 
+  const handleLocationChange = (input) => {
+    setLocation(input.target.value);
+  };
+  
   const handlePasswordChange = (input) => {
     setPassword(input.target.value);
   };
@@ -60,7 +70,7 @@ const Register = () => {
       alert("Password and current password not matched");
     }
     else{
-        registerUser(username, password, email)
+        registerUser(username, password, email, about, location)
         .then((statusCode)=>{
             if(statusCode===200){
               navigate("/login");
@@ -151,8 +161,37 @@ const Register = () => {
               name="email"
               autoFocus
             />  
+            <br/>
+            <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+              type="text"
+              id="about"
+              label="about"
+              autoComplete="about"
+              value={about}
+              onChange={handleAboutChange}
+              name="about"
+              autoFocus
+            />  
                 <br/>
-
+            <TextField
+              margin="normal"
+              variant="outlined"
+               size="small"
+              required
+              type="text"
+              id="location"
+              label="location"
+              autoComplete="location"
+              value={location}
+              onChange={handleLocationChange}
+              name="location"
+              autoFocus
+            />  
+                <br/>
                <TextField
               margin="normal"
               variant="outlined"
