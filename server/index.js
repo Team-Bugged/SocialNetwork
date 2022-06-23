@@ -340,6 +340,16 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
     }))
 
   let alreadySentRequest = [];
+    result.records.map((record) => {
+        alreadySentRequest.push(record._fields[0].properties);
+    });
+
+  readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(v:User)-[c2:Connection]->(w:User) RETURN w"
+  result = await session.readTransaction((tx)=>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    }))
+  
   result.records.map((record) => {
       alreadySentRequest.push(record._fields[0].properties);
   });
@@ -356,7 +366,7 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
       }
     }
     if(!bool){
-      sug.push(suggestions[i]);
+      sug.push(suggestions[j]);
     }
   }
 
