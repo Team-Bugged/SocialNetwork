@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import { Box } from "@mui/material";
 import Button from '@mui/material/Button';
 
 const Login = () => {
@@ -55,21 +56,26 @@ const Login = () => {
 };
 
   return (
-    <>
-    <ThemeProvider theme={theme}>
+    <Box align="center"  backgroundColor="primary.main" style={{ display:'flex',justifyContent:'space-evenly', minHeight: '100vh'}}>
+    <ThemeProvider theme={theme} >
     
     <Grid  container
     spacing={0}
     align="center"
-    justify="center"
+    justify="cente"
     direction="column"
     justifyContent="center"
-  style={{ minHeight: '100vh' }}
+    backgroundColor="white"
+    margin={5}
+    style={{width:500, maxHeight: '100vh'}}
     >
+      {/* <Box sx={{backgroundColor:"white"}}>
+
+      </Box> */}
              <div className="login-header">
             <ThemeProvider theme={theme}>
-      <Typography component="h1" variant="h3" color="#0077b5"> Sign In</Typography>
-       <Typography component="h1" variant="h4" color="#0077b5">  Enter your credentials.</Typography>
+      <Typography component="h1" variant="h3" color="primary" > Sign In</Typography>
+       {/* <Typography component="h1" variant="h4" color="primary">  Enter your credentials.</Typography> */}
         </ThemeProvider>         
           </div>
           
@@ -121,8 +127,9 @@ const Login = () => {
             </form>
             </Grid>
           </ThemeProvider>
+          {/* <img src={"/assets/welcome-img.jpg"} style={{width:550,height:400}}/> */}
           
-    </>
+    </Box>
   );
 };
 

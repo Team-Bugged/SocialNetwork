@@ -6,6 +6,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { Box } from "@mui/material";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -94,23 +95,26 @@ const Register = () => {
 };
 
   return (
-    <>
+    <Box align="center"  backgroundColor="primary.main" style={{ display:'flex',justifyContent:'space-evenly', minHeight: '100vh'}}>
      <ThemeProvider theme={theme}>
      <Grid  container
     spacing={0}
     align="center"
-    justify="center"
+    // justify="center"
     direction="column"
     justifyContent="center"
-  style={{ minHeight: '100vh' }}
+    backgroundColor="white"
+    margin={5}
+    paddingTop={6}
+    style={{width:500, minHeight: '100vh'}}
     >
       <div className="login-page">
         <div className="form">
           <div className="login">
           <div className="login-header">
                 <ThemeProvider theme={theme}>
-                 <Typography component="h1" variant="h3" color="#00a0dc"> Register</Typography>
-                  <Typography component="h1" variant="h4" color="#00a0dc"> Please enter your credentials to register.</Typography>
+                 <Typography component="h1" variant="h3" color="primary"> Register</Typography>
+                  {/* <Typography component="h1" variant="h4" color="#00a0dc"> Please enter your credentials to register.</Typography> */}
                 </ThemeProvider>
             </div>
             <form className="login-form">
@@ -243,7 +247,7 @@ const Register = () => {
       </div>
       </Grid>
       </ThemeProvider>
-    </>
+    </Box>
   );
 };
 
