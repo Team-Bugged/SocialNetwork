@@ -1,13 +1,18 @@
 import { Avatar, Card, Button,CardContent, Typography } from "@mui/material"
 import { sendsConnection } from "../ServerConnection";
+import {useState} from "react"
 
 export const SuggestionCard=(props)=>{
+
+    const [buttonName, setButtonName] = useState("connect");
 
     const sendConnectionTo = "";
     console.log(props.userData);
 
-    const handleAddConnection =()=>{
+    const handleAddConnection =(event)=>{
             sendsConnection(sendConnectionTo);
+            setButtonName("Connection Sent")
+            props.handleSendConnection(event.target.value);
             console.log("Req sent")
         }
 
@@ -29,8 +34,8 @@ export const SuggestionCard=(props)=>{
                     7 Mutual Connections
                 </Typography>
             </CardContent>
-            <Button variant="outlined" onClick={handleAddConnection}>
-                Connect
+            <Button value={props.userData.username} variant="outlined" onClick={handleAddConnection}>
+                {buttonName}
             </Button>
            
         </Card>

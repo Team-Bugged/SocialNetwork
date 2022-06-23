@@ -330,6 +330,21 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
       suggestions.push(record._fields[0].properties);
   });
 
+  readQuery = "MATCH (u:User{username: $usernameP })-[c1:SendsConnection]->(v:User) RETURN v;";
+  result = await session.readTransaction((tx)=>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    }))
+
+  let alreadySentRequest = [];
+  result.records.map((record) => {
+    if (record._fields[0].properties.username != req.username)
+      alreadySentRequest.push(record._fields[0].properties);
+  });
+
+  suggestions.filter((element)=>
+    (!(element.id in alreadySentRequest))
+  )
   // console.log(result);
   res.status(200);
 

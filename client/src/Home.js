@@ -67,7 +67,7 @@ export const Home = ()=>{
         width: 870,
         minHeight: 508,
         flexWrap: 'wrap',
-        justifyContent:'space-between',
+        // justifyContent:'center',
         '& > :not(style)': {
           m: 1,
           mb:2,
