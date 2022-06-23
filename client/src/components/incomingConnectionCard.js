@@ -27,7 +27,7 @@ export const IncomingConnectionCard=(props)=>{
                 </Typography>
             </CardContent>
             <Button variant="outlined" value={props.userData.username} onClick={handleAcceptConnection}>
-                Connect
+                Accept
             </Button>
            
         </Card>

@@ -13,11 +13,9 @@ export const IncomingConnections = () => {
   }, []);
   return (
     <>
-      <div>
         {incomingConnection?.map((userData) => (
           <IncomingConnectionCard userData = {userData}/>
         ))}
-      </div>
     </>
   );
 };
