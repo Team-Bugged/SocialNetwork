@@ -10,12 +10,12 @@ export const SuggestionCard=(props)=>{
     console.log(props.userData);
 
     const handleAddConnection =(event)=>{
-            sendsConnection(sendConnectionTo);
+            sendsConnection(event.target.value);
             setButtonName("Connection Sent")
             props.handleSendConnection(event.target.value);
-            console.log("Req sent")
-        }
-
+    console.log(props.userData);
+    }
+    
     return(
         <Card  elevation={3} align="center">
             <Avatar
