@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { getConnections, sendsConnection } from "./ServerConnection"; 
 import { DisplayConnections } from "./DisplayConnections";
 import {Navbar} from "./components/Navbar";
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { ProfileCard } from "./components/ProfileCard";
 import { Card, Typography } from "@mui/material";
@@ -14,6 +13,7 @@ import { Profile } from "./Profile";
 import { GetSuggestions } from "./getSuggestions";
 import { IncomingConnectionCard } from "./components/incomingConnectionCard";
 import { IncomingConnections } from "./incomingConnections";
+import { fontSize } from "@mui/system";
 
 
 export const Home = ()=>{
@@ -51,94 +51,86 @@ export const Home = ()=>{
     }, [])
 
     return (
-    <Box height='100%' >
+    <>
         
     <Navbar/>
-    <Box sx={{m:2,display:'flex'}}>
+    <Box sx={{mx:2,mt:4,display:'flex'}}>
         <Profile/>
-        
-    <Box>
-        <h1>Incoming Connections: </h1>
-    <Box 
-      sx={{
-          p:2,
-          backgroundColor: 'white',
-          
-        borderRadius:7,
-        display: 'flex',
-        width: 870,
-        minHeight: 508,
-        flexWrap: 'wrap',
-        // justifyContent:'center',
-        '& > :not(style)': {
-          m: 1,
-          mb:2,
-        //   border:1,
-        //   borderColor:'primary.dark',
-          borderRadius:5,          
-          width: 180,
-          height: 250,
-          
-        },
-        '& > :hover':{
-            cursor:'pointer',
-            backgroundColor:'secondary.main',
-            boxShadow:6,
-        }
-      }}
-    >
-      {/* <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/>
-      <SuggestionCard/> */}
-      
-      <IncomingConnections />
-      
-    </Box>
-    <h1>Suggested Connections: </h1>
-    <Box 
-      sx={{
-          p:2,
-          backgroundColor: 'white',
-          
-          borderRadius:7,
-          display: 'flex',
-          width: 870,
-        minHeight: 508,
-        flexWrap: 'wrap',
-        justifyContent:'space-between',
-        '& > :not(style)': {
-            m: 1,
-            mb:2,
-            //   border:1,
-            //   borderColor:'primary.dark',
-            borderRadius:5,          
-          width: 180,
-          height: 250,
-          
-        },
-        '& > :hover':{
-            cursor:'pointer',
-            backgroundColor:'secondary.main',
-            boxShadow:6,
-        }
-    }}
-    >
-    <GetSuggestions/>
-      
-    </Box>
+        <Box>
+           
+            <Box sx={{
+                display:'flex',flexDirection:'column', p:3,
+                backgroundColor: 'white',
+                borderRadius:7,}}>
+                 <Typography sx={{fontSize:20}}>Incoming Connections: </Typography>
+                 <Box sx={{
+                       
+                        display: 'flex',
+                        width: 870,
+                        minHeight: 508,
+                        flexWrap: 'wrap',
+                        justifyContent:'space-evenly',
+                        '& > :not(style)': {
+                        m: 1,
+                        mb:2,
+                        //   border:1,
+                        //   borderColor:'primary.dark',
+                        borderRadius:5,          
+                        width: 180,
+                        height: 250,
+                        
+                        },
+                        '& > :hover':{
+                            cursor:'pointer',
+                            backgroundColor:'secondary.main',
+                            boxShadow:6,
+                        }
+                    }}
+                    >
+                    
+                    <IncomingConnections />
+                    
+                    </Box>
+            </Box>
+            
+            <h1>Suggested Connections: </h1>
+            <Box 
+            sx={{
+                p:2,
+                backgroundColor: 'white',
+                
+                borderRadius:7,
+                display: 'flex',
+                width: 870,
+                minHeight: 508,
+                flexWrap: 'wrap',
+                justifyContent:'space-evenly',
+                '& > :not(style)': {
+                    m: 1,
+                    mb:2,
+                    //   border:1,
+                    //   borderColor:'primary.dark',
+                    borderRadius:5,          
+                width: 180,
+                height: 250,
+                
+                },
+                '& > :hover':{
+                    cursor:'pointer',
+                    backgroundColor:'secondary.main',
+                    boxShadow:6,
+                }
+            }}
+            >
+            <GetSuggestions/>
+            
         </Box>
+     </Box>
+
+        
+
+ </Box>
     
-
-    </Box>
-    
-
-
-
 
 
 
@@ -153,5 +145,5 @@ export const Home = ()=>{
         <button onClick={handleAddConnectionsSubmit}>Submit</button>
         </>:
         <></>}
-    </Box>)
+    </>)
 }
