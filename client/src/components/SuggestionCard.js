@@ -3,11 +3,11 @@ import { sendsConnection } from "../ServerConnection";
 
 export const SuggestionCard=(props)=>{
 
-    const sendConnectionTo = "";
     console.log(props.userData);
 
-    const handleAddConnection =()=>{
-            sendsConnection(sendConnectionTo);
+    const handleAddConnection =(event)=>{
+        console.log(event.target.value);
+            sendsConnection(event.target.value);
             console.log("Req sent")
         }
 
@@ -29,7 +29,7 @@ export const SuggestionCard=(props)=>{
                     7 Mutual Connections
                 </Typography>
             </CardContent>
-            <Button variant="outlined" onClick={handleAddConnection}>
+            <Button variant="outlined" value = {props.userData.username} onClick={handleAddConnection}>
                 Connect
             </Button>
            

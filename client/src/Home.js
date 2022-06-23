@@ -12,6 +12,8 @@ import { SuggestionCard } from "./components/SuggestionCard";
 import shadows from "@mui/material/styles/shadows";
 import { Profile } from "./Profile";
 import { GetSuggestions } from "./getSuggestions";
+import { IncomingConnectionCard } from "./components/incomingConnectionCard";
+import { IncomingConnections } from "./incomingConnections";
 
 
 export const Home = ()=>{
@@ -94,7 +96,7 @@ export const Home = ()=>{
       <SuggestionCard/>
       <SuggestionCard/> */}
       
-      
+      <IncomingConnections />
       
     </Box>
     <h1>Suggested Connections: </h1>
