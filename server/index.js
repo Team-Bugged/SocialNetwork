@@ -72,6 +72,7 @@ app.post("/register", async (req, res) =>{
                 access_key: process.env.POSITIONSTACK_API_KEY,
                 query: req.body.location
               }
+              console.log(params.query)
               let latitude, longitude;
               let response = await axios.get('http://api.positionstack.com/v1/forward', {params});
 
