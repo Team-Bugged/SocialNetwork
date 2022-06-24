@@ -331,7 +331,7 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
       suggestions.push(record._fields[0].properties);
   });
 
-  console.log(suggestions);
+  console.log("Suggestions"+suggestions);
 
   readQuery = "MATCH (u:User{username: $usernameP })-[c1:SendsConnection]->(v:User) RETURN v;";
   result = await session.readTransaction((tx)=>
@@ -344,7 +344,7 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
         alreadySentRequest.push(record._fields[0].properties);
     });
 
-  readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(v:User)-[c2:Connection]->(w:User) RETURN w"
+  readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(v:User) RETURN v"
   result = await session.readTransaction((tx)=>
     tx.run(readQuery, {
       usernameP: req.username,
@@ -354,7 +354,7 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
       alreadySentRequest.push(record._fields[0].properties);
   });
 
-  console.log(alreadySentRequest);
+  console.log("Already Sent request"+alreadySentRequest);
   
   let sug = [];
   for(let j=0; j<suggestions.length; ++j){
