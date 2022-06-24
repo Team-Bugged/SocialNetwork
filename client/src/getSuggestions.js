@@ -7,8 +7,9 @@ export const GetSuggestions = () => {
 
   const handleSendConnection = (username)=>{
       let suggestionList = getSuggestion;
+      console.log(suggestionList);
       suggestionList.filter((element)=>
-        (element.username != username)
+        element.username != username
       )
       console.log("check");
       setGetSuggestion(suggestionList);
