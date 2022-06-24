@@ -1,3 +1,4 @@
+import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router-dom"
 
 export const DisplayConnections = ({connections})=>{
@@ -8,5 +9,11 @@ export const DisplayConnections = ({connections})=>{
         navigate(`/user/${connections}`);
     }
 
-    return <div onClick={handleConnectionClick}>{connections}</div>
+    return (
+    <>
+        <ListItemButton onClick={handleConnectionClick}>
+            <ListItemIcon></ListItemIcon>
+            <ListItemText primary={connections} />
+        </ListItemButton>
+    </>)
 }
