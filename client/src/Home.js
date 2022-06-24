@@ -6,7 +6,7 @@ import { DisplayConnections } from "./DisplayConnections";
 import {Navbar} from "./components/Navbar";
 import Box from '@mui/material/Box';
 import { ProfileCard } from "./components/ProfileCard";
-import { Card, Typography } from "@mui/material";
+import { Card, Divider, Typography } from "@mui/material";
 import { SuggestionCard } from "./components/SuggestionCard";
 import shadows from "@mui/material/styles/shadows";
 import { Profile } from "./Profile";
@@ -14,27 +14,14 @@ import { GetSuggestions } from "./getSuggestions";
 import { IncomingConnectionCard } from "./components/incomingConnectionCard";
 import { IncomingConnections } from "./incomingConnections";
 import { fontSize } from "@mui/system";
+import { ConnectionCard } from "./components/ConnectionsCard";
 
 
 export const Home = ()=>{
     const cookies = new Cookies();
     const navigate = useNavigate();
     const [connections, setConnections] = useState([]);
-    const [inputBox, setInputBox] = useState(false);
-    const [input, setInput] = useState("");
-
-    const handleAddConnections = ()=>{
-        setInputBox(!inputBox);
-    }
-
-    const handleInputChange = (input)=>{
-        console.log(input.target.value);
-        setInput(input.target.value);
-    }
-
-    const handleAddConnectionsSubmit =()=>{
-        sendsConnection(input);
-    }
+    
 
     let text = "home";
     useEffect(()=>{
@@ -54,11 +41,15 @@ export const Home = ()=>{
     <>
         
     <Navbar/>
-    <Box sx={{mx:2,mt:4,display:'flex'}}>
-        <Profile/>
-        <Box>
+    <Box sx={{mx:2,mt:4,display:'flex', flexDirection:'row'}}>
+        <Box m={2} sx={{mx:2,mt:4,display:'flex', flexDirection:'column'}}>
+            <Profile connections={connections}/>
+            <ConnectionCard connections={connections}/>
+        </Box>
+        
+        <Box sx={{mx:2,mt:4,display:'flex', flexDirection:'column'}}>
            
-            <Box sx={{
+            <Box m={2} sx={{
                 display:'flex',flexDirection:'column', p:3,
                 backgroundColor: 'white',
                 borderRadius:7,}}>
@@ -92,8 +83,11 @@ export const Home = ()=>{
                     
                     </Box>
             </Box>
-            
-            <h1>Suggested Connections: </h1>
+            <Box m={2} sx={{
+                display:'flex',flexDirection:'column', p:3,
+                backgroundColor: 'white',
+                borderRadius:7,}}>
+                 <Typography sx={{fontSize:20}}>Suggested Connections: </Typography>
             <Box 
             sx={{
                 p:2,
@@ -125,6 +119,7 @@ export const Home = ()=>{
             <GetSuggestions/>
             
         </Box>
+        </Box>
      </Box>
 
         
@@ -134,16 +129,6 @@ export const Home = ()=>{
 
 
 
-    {connections.length>0? connections.map((con)=>{
-        return <DisplayConnections key = {con} connections={con} />
-    }) : "No connections"}
-    <div>
-        <button onClick={handleAddConnections}>Add Connections</button>
-    </div>
-    {inputBox?<>
-        <input onChange={handleInputChange}/>
-        <button onClick={handleAddConnectionsSubmit}>Submit</button>
-        </>:
-        <></>}
+    
     </>)
 }

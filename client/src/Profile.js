@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { ProfileCard } from "./components/ProfileCard";
 import { getProfile } from "./ServerConnection";
 
-export const Profile = ()=>{
+export const Profile = (props)=>{
 
     const [profileData, setProfileData] = useState();
     // const [dp, setDp] = useState();
@@ -24,7 +24,7 @@ export const Profile = ()=>{
         <>
             
             {profileData?<div>
-                <ProfileCard profileData = {profileData}/>
+                <ProfileCard connections = {props.connections} profileData = {profileData}/>
             </div>:"EMPTY"}
         </>
     )
