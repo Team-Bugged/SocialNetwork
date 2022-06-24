@@ -331,6 +331,8 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
       suggestions.push(record._fields[0].properties);
   });
 
+  console.log(suggestions);
+
   readQuery = "MATCH (u:User{username: $usernameP })-[c1:SendsConnection]->(v:User) RETURN v;";
   result = await session.readTransaction((tx)=>
     tx.run(readQuery, {
@@ -338,14 +340,36 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
     }))
 
   let alreadySentRequest = [];
+    result.records.map((record) => {
+        alreadySentRequest.push(record._fields[0].properties);
+    });
+
+  readQuery = "MATCH (u:User{username: $usernameP})-[c1:Connection]->(v:User)-[c2:Connection]->(w:User) RETURN w"
+  result = await session.readTransaction((tx)=>
+    tx.run(readQuery, {
+      usernameP: req.username,
+    }))
+  
   result.records.map((record) => {
-    if (record._fields[0].properties.username != req.username)
       alreadySentRequest.push(record._fields[0].properties);
   });
 
-  suggestions.filter((element)=>
-    (!(element.id in alreadySentRequest))
-  )
+  console.log(alreadySentRequest);
+  
+  let sug = [];
+  for(let j=0; j<suggestions.length; ++j){
+    let bool = false;
+    for(let i=0; i<alreadySentRequest.length; ++i){
+      // console.log(alreadySentRequest[i].username);
+      if(alreadySentRequest[i].username === suggestions[j].username){
+        bool =true;
+      }
+    }
+    if(!bool){
+      sug.push(suggestions[j]);
+    }
+  }
+
   // console.log(result);
   res.status(200);
 
@@ -358,18 +382,18 @@ app.get("/getSuggestions", authenticate, async (req, res) => {
   
   // console.log(suggestions);
   // console.log(result);
-  suggestions.map((node)=>{
+  sug.map((node)=>{
     node.distance = distance(result.records[0]._fields[0].properties.latitude, result.records[0]._fields[0].properties.longitude,
       node.latitude, node.longitude);
   })
   
-  suggestions.sort((a,b)=>{
+  sug.sort((a,b)=>{
       return a.distance > b.distance? 1: a.distance===b.distance?0:-1; 
   })
-  console.log(suggestions);
+  console.log(sug);
 
 
-  res.send(suggestions);
+  res.send(sug);
   session.close();
 });
 
