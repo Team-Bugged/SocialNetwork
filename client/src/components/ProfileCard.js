@@ -16,8 +16,10 @@ import PersonIcon from '@mui/icons-material/Person';
 
 
 export const ProfileCard=(props)=> {
+
+  let numConnections = props.connections.length + ' Connections ';
   return (
-    <Card sx={{ px:2,mr:3,borderRadius:8,minWidth: 275}} align="center">
+    <Card sx={{ px:2,m:3,borderRadius:8,minWidth: 275}} align="center">
       <CardMedia sx={{mt:2}} align="center">
         <Avatar
          sx={{ width: 76, height: 76 }}
@@ -49,7 +51,7 @@ export const ProfileCard=(props)=> {
         <ListItemIcon>
           <PersonIcon color="primary"/>
         </ListItemIcon>
-        <ListItemText primary="12 Connections" />
+        <ListItemText primary={numConnections}/>
       </ListItemButton>
       
       <ListItemButton>
@@ -57,7 +59,14 @@ export const ProfileCard=(props)=> {
           <DraftsIcon color="primary" />
         </ListItemIcon>
         <ListItemText primary={props.profileData.email} />
-      </ListItemButton>      
+      </ListItemButton>   
+
+      <ListItemButton>
+        <ListItemIcon>
+          <DraftsIcon color="primary" />
+        </ListItemIcon>
+        <ListItemText primary={props.profileData.about} />
+      </ListItemButton>     
     </List>
     </CardContent>
       {/* <CardActions>
