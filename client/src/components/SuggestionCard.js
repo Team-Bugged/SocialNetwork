@@ -23,7 +23,7 @@ export const SuggestionCard=(props)=>{
                  alt="Remy Sharp"
                  src="https://static.vecteezy.com/system/resources/thumbnails/002/002/257/small/beautiful-woman-avatar-character-icon-free-vector.jpg"                  
             />
-            <CardContent>
+            <CardContent value= {props.userData.username} onClick = {props.handleProfileOnClick}>
                 <Typography>
                     {props.userData.username}
                 </Typography>

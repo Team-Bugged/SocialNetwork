@@ -2,6 +2,7 @@ import { Avatar, Card, Button,CardContent, Typography } from "@mui/material"
 import { acceptConnection } from "../ServerConnection";
 
 export const IncomingConnectionCard=(props)=>{
+
     const handleAcceptConnection = (event) => {
     console.log(event.target.value);
     acceptConnection(event.target.value);
@@ -15,7 +16,7 @@ export const IncomingConnectionCard=(props)=>{
                  alt="Remy Sharp"
                  src="https://static.vecteezy.com/system/resources/thumbnails/002/002/257/small/beautiful-woman-avatar-character-icon-free-vector.jpg"                  
             />
-            <CardContent>
+            <CardContent value= {props.userData.username} onClick = {props.handleProfileOnClick}>
                 <Typography>
                     {props.userData.username}
                 </Typography>

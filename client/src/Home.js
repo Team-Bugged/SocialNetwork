@@ -1,7 +1,7 @@
 import Cookies from "universal-cookie"
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getConnections, sendsConnection } from "./ServerConnection"; 
+import { getConnections, sendsConnection , getUserData} from "./ServerConnection"; 
 import { DisplayConnections } from "./DisplayConnections";
 import {Navbar} from "./components/Navbar";
 import Box from '@mui/material/Box';
@@ -16,13 +16,17 @@ import { IncomingConnections } from "./incomingConnections";
 import { fontSize } from "@mui/system";
 import { ConnectionCard } from "./components/ConnectionsCard";
 
-
 export const Home = ()=>{
     const cookies = new Cookies();
     const navigate = useNavigate();
     const [connections, setConnections] = useState([]);
     
 
+    const handleProfileOnClick = (event)=>{
+        console.log(event)
+        let str = '/user/' + event.target.value;
+        navigate(str);
+    }
     let text = "home";
     useEffect(()=>{
         if(cookies.get("token")==undefined){
@@ -79,7 +83,7 @@ export const Home = ()=>{
                     }}
                     >
                     
-                    <IncomingConnections />
+                    <IncomingConnections handleProfileOnClick={handleProfileOnClick}/>
                     
                     </Box>
             </Box>
@@ -116,7 +120,7 @@ export const Home = ()=>{
                 }
             }}
             >
-            <GetSuggestions/>
+            <GetSuggestions handleProfileOnClick = {handleProfileOnClick}/>
             
         </Box>
         </Box>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { IncomingConnectionCard } from "./components/incomingConnectionCard";
 import { acceptConnection, getIncomingConnections } from "./ServerConnection";
 
-export const IncomingConnections = () => {
+export const IncomingConnections = (props) => {
   
   const [incomingConnection, setIncomingConnection] = useState();
   useEffect(() => {
@@ -14,7 +14,8 @@ export const IncomingConnections = () => {
   return (
     <>
         {incomingConnection?.map((userData) => (
-          <IncomingConnectionCard userData = {userData}/>
+          <IncomingConnectionCard userData = {userData}
+          handleProfileOnClick={props.handleProfileOnClick}/>
         ))}
     </>
   );

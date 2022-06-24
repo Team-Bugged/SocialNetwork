@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { SuggestionCard } from "./components/SuggestionCard";
 import { getSuggestions } from "./ServerConnection";
 
-export const GetSuggestions = () => {
+export const GetSuggestions = (props) => {
   const [getSuggestion, setGetSuggestion] = useState([]);
 
   const handleSendConnection = (username)=>{
@@ -24,7 +24,8 @@ export const GetSuggestions = () => {
     <>
 
         {getSuggestion?.map((userData) => (
-          <SuggestionCard userData = {userData} handleSendConnection={handleSendConnection}/>
+          <SuggestionCard userData = {userData} handleSendConnection={handleSendConnection}
+          handleProfileOnClick={props.handleProfileOnClick}/>
         ))}
     </>
   );
